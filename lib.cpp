@@ -1,11 +1,6 @@
 #include "lib.h"
 #include "version.h"
 
-#include <algorithm>
-#include <cassert>
-#include <fstream>
-#include <iostream>
-
 int version()
 {
     return PROJECT_VERSION_PATCH;
@@ -36,33 +31,24 @@ static std::vector<std::string> split(const std::string &str, char d)
     return r;
 }
 
-ip_pool_type write_ip_pool(const std::string & filename)
+ip_pool_type write_ip_pool(std::istream& istream)
 {
     ip_pool_type ip_pool;
-    std::ifstream in(filename);
-    if (in.is_open())
+    for(std::string line; std::getline(istream, line);)
     {
-        for(std::string line; std::getline(in, line);)
-        {
-            const auto ip_str = split(split(line, '\t').at(0), '.');
-            if (ip_str.size() != 4) throw std::runtime_error("Wrong ip length.");
+        const auto ip_str = split(split(line, '\t').at(0), '.');
+        if (ip_str.size() != 4) throw std::runtime_error("Wrong ip length.");
 
-            ip_type ip(4);
-            for (std::size_t i = 0; i < 4; i++)
-            {
-                const int ip_part = std::stoi(ip_str[i]);
-                if (ip_part < 0 || ip_part > 255)
-                    throw std::out_of_range("Value is out of range for unsigned char.");
-                ip[i] = static_cast<unsigned char>(ip_part);
-            }
-            ip_pool.emplace_back(std::move(ip));
+        ip_type ip(4);
+        for (std::size_t i = 0; i < 4; i++)
+        {
+            const int ip_part = std::stoi(ip_str[i]);
+            if (ip_part < 0 || ip_part > 255)
+                throw std::domain_error("Value is out of range for unsigned char.");
+            ip[i] = static_cast<unsigned char>(ip_part);
         }
+        ip_pool.emplace_back(std::move(ip));
     }
-    else
-    {
-        std::cout << "The input file cannot be opened." << std::endl;
-    }
-    in.close();
     return ip_pool;
 }
 
@@ -76,38 +62,43 @@ void make_reverse_sort(ip_pool_type & ip_pool)
     );
 }
 
-static auto print_ip = [](const auto & ip)
+struct Print_ip
 {
-    std::cout << static_cast<int>(ip.at(0)) << "." <<
-                 static_cast<int>(ip.at(1)) << "." <<
-                 static_cast<int>(ip.at(2)) << "." <<
-                 static_cast<int>(ip.at(3)) << std::endl;
+    std::ostream & ostream;
+    Print_ip(std::ostream & ostream_) :ostream(ostream_) {};
+    void operator() (const ip_type & ip)
+    {
+        ostream << static_cast<int>(ip.at(0)) << "." <<
+                   static_cast<int>(ip.at(1)) << "." <<
+                   static_cast<int>(ip.at(2)) << "." <<
+                   static_cast<int>(ip.at(3)) << std::endl;
+    }
 };
 
-void print_ip_pool(const ip_pool_type & ip_pool)
+void print_ip_pool(std::ostream & ostream, const ip_pool_type & ip_pool)
 {
-    std::for_each(ip_pool.cbegin(), ip_pool.cend(), print_ip);
+    std::for_each(ip_pool.cbegin(), ip_pool.cend(), Print_ip(ostream));
 }
 
-void print_ip_pool(const ip_pool_type & ip_pool,
+void print_ip_pool(std::ostream & ostream, const ip_pool_type & ip_pool,
                    const std::pair<std::size_t, int> & byte)
 {
     std::for_each(ip_pool.cbegin(), ip_pool.cend(),
-        [&](const auto & ip){ if (ip.at(byte.first) == byte.second) print_ip(ip); });
+        [&ostream, &byte](const auto & ip){ if (ip.at(byte.first) == byte.second) (Print_ip(ostream))(ip); });
 }
 
-void print_ip_pool(const ip_pool_type & ip_pool,
+void print_ip_pool(std::ostream & ostream, const ip_pool_type & ip_pool,
                    const std::pair<std::size_t, int> & byte1,
                    const std::pair<std::size_t, int> & byte2)
 {
     std::for_each(ip_pool.cbegin(), ip_pool.cend(),
-        [&](const auto & ip){ if ((ip.at(byte1.first) == byte1.second) &&
-                                  (ip.at(byte2.first) == byte2.second)) print_ip(ip); });
+        [&ostream, &byte1, &byte2](const auto & ip){ if ((ip.at(byte1.first) == byte1.second) &&
+                                  (ip.at(byte2.first) == byte2.second)) (Print_ip(ostream))(ip); });
 }
 
-void print_ip_pool(const ip_pool_type & ip_pool, const int value)
+void print_ip_pool(std::ostream & ostream, const ip_pool_type & ip_pool, const int value)
 {
     std::for_each(ip_pool.cbegin(), ip_pool.cend(),
-        [&](const auto & ip){ if (std::any_of(ip.cbegin(), ip.cend(),
-            [&](const auto & b){ return b == value; })) print_ip(ip); });
+        [&ostream, &value](const auto & ip){ if (std::any_of(ip.cbegin(), ip.cend(),
+            [&ostream, &value](const auto & b){ return b == value; })) (Print_ip(ostream))(ip); });
 }
