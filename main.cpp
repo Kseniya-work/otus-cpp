@@ -22,7 +22,17 @@ int main(int, char **)
 
     for (auto [key, value] : my_map2)
         std::cout << key << " " << value << std::endl;
+    std::cout << std::endl;
 
+
+    MyContainer<int> my_container;
+    for (int i = 0; i < 10; i++)
+        my_container.add(i);
+
+    std::cout << "my_container: " << std::endl;
+    for (auto i : my_container)
+        std::cout << i << " ";
+    std::cout << std::endl;
 
 /*
     std::map<int, int, std::less<int>, MyAllocator<std::pair<const int, int>>> my_map {{0, 1},{1, 1},{2, 1}};
