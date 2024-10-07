@@ -25,26 +25,17 @@ int main(int, char **)
     std::cout << std::endl;
 
 
-    MyContainer<int> my_container;
+    MyContainer<int> my_container1;
     for (int i = 0; i < 10; i++)
-        my_container.add(i);
+        my_container1.add(i);
 
-    std::cout << "my_container: " << std::endl;
-    for (auto i : my_container)
+    MyContainer<int, MyAllocator<int, 10>> my_container2;
+    for (int i = 0; i < 10; i++)
+        my_container2.add(i);
+
+    for (auto i : my_container2)
         std::cout << i << " ";
     std::cout << std::endl;
-
-/*
-    std::map<int, int, std::less<int>, MyAllocator<std::pair<const int, int>>> my_map {{0, 1},{1, 1},{2, 1}};
-    my_map.clear();
-    my_map[0] = 1;
-    my_map[1] = 1;
-    my_map.erase(1);
-    my_map[1] = 1;
-    my_map[1] = 2;
-*/
-
-    // std::vector<int, MyAllocator<int>> v{1};
 
     return 0;
 }

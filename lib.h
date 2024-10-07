@@ -121,7 +121,7 @@ class MyContainer
         Node(Node* next_, T data_) : next(next_), data(data_){}
     };
 
-    typename Alloc::template rebind<Node>::other nodeAlloc;
+    using NodeAlloc = typename Alloc::template rebind<Node>::other;
 
 public:
     MyContainer()
@@ -130,9 +130,21 @@ public:
     , nodesCounter()
     {}
 
+    ~MyContainer()
+    {
+        auto cur = head;
+        while (cur != nullptr)
+        {
+            auto next = cur->next;
+            std::allocator_traits<NodeAlloc>::deallocate(nodeAlloc, cur, 1);
+            cur = next;
+        }
+        std::cout << "destruct MyContainer " << std::endl;
+    }
+
     void add(const T& item)
     {
-        Node* cur = nodeAlloc.allocate(1);
+        Node* cur = std::allocator_traits<NodeAlloc>::allocate(nodeAlloc, 1);
 
         if (nodesCounter == 0)
         {
@@ -143,7 +155,7 @@ public:
             prev->next = cur;
         }
 
-        nodeAlloc.construct(cur, Node(nullptr, item));
+        std::allocator_traits<NodeAlloc>::construct(nodeAlloc, cur, Node(nullptr, item));
         prev = cur;
         nodesCounter++;
     }
@@ -193,4 +205,5 @@ private:
     Node* prev = nullptr;
     std::size_t nodesCounter = 0;
     Alloc allocator;
+    NodeAlloc nodeAlloc;
 };
