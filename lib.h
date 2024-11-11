@@ -1,3 +1,11 @@
+/*!
+\file
+\brief IP address print function.
+
+The function is implemented for various input parameters by using
+SFINAE mechanism.
+*/
+
 #pragma once
 
 #include <algorithm>
@@ -11,9 +19,17 @@
 #include <tuple>
 #include <vector>
 
-
+/*!
+Prints the current build number
+\return The current build number
+*/
 int version();
 
+/*!
+Prints the address bytewise in unsigned form, starting with the most highest byte,
+with the symbol . (dot character) as a separator. All bytes of the number are output.
+\param Address as an arbitrary integer type
+*/
 template <typename T>
 constexpr std::enable_if_t<std::is_integral_v<T>, void> print_ip(const T & t)
 {
@@ -31,6 +47,10 @@ constexpr std::enable_if_t<std::is_integral_v<T>, void> print_ip(const T & t)
     std::cout << std::endl;
 }
 
+/*!
+Prints as is, regardless of the content.
+\param Address as a string
+*/
 template <typename T>
 constexpr std::enable_if_t<std::is_same_v<std::string, T>, void> print_ip(const T & t)
 {
@@ -48,6 +68,11 @@ struct is_container<std::vector<T, Alloc>>: std::true_type {};
 template <typename T, typename Alloc>
 struct is_container<std::list<T, Alloc>>: std::true_type {};
 
+/*!
+Prints the full contents of the container element by element and splits it. (symbol
+dot). The elements are displayed as is.
+\param Address in the form of containers std::list, std::vector
+*/
 template <typename T>
 constexpr std::enable_if_t<is_container<T>::value, void> print_ip(const T & t)
 {
@@ -74,6 +99,13 @@ constexpr void print_ip_from_tuple(const T & t, std::index_sequence<I...>)
     ((std::cout << (I ? "." : "") << std::get<I>(t)), ...);
 }
 
+/*!
+Prints the address as a std::tuple, provided all types are the same.
+The complete contents are output element by element and separated. (one dot symbol).
+The elements are displayed as is.
+\warning If the tuple types are not the same, a compilation error will be thrown.
+\param Address as std::tuple
+*/
 template <class T>
 constexpr std::enable_if_t<is_tuple<T>::value, void> print_ip(const T & t)
 {
