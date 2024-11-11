@@ -1,6 +1,9 @@
 #include "lib.h"
 
 #include <algorithm>
+#include <bit>
+#include <cmath>
+#include <cstddef>
 #include <iostream>
 #include <list>
 #include <string>
@@ -12,7 +15,18 @@
 template <typename T>
 constexpr std::enable_if_t<std::is_integral_v<T>, void> print_ip(const T & t)
 {
-    std::cout << (int)static_cast<unsigned char>(t) << std::endl;
+    constexpr bool is_endian_big = std::endian::native == std::endian::big;
+    int endian_depend_idx = 0;
+    if constexpr (std::endian::native == std::endian::big)
+        endian_depend_idx = 0;
+    else if constexpr (std::endian::native == std::endian::little)
+        endian_depend_idx = sizeof(T) - 1;
+
+    const std::byte * bytes = (const std::byte *) (&t);
+    for (int i = 0; i < (int)sizeof(T); i++)
+        std::cout << ((is_endian_big && i != 0) || (!is_endian_big && (endian_depend_idx - i != sizeof(T) - 1)) ? "." : "") <<
+                     std::to_integer<int>(bytes[std::abs(endian_depend_idx - i)]);
+    std::cout << std::endl;
 }
 
 template <typename T>

@@ -13,7 +13,7 @@ add_executable(print_ip main.cpp)
 add_library(print_ip_lib lib.cpp)
 
 set_target_properties(print_ip print_ip_lib PROPERTIES
-    CXX_STANDARD 17
+    CXX_STANDARD 20
     CXX_STANDARD_REQUIRED ON
 )
 
