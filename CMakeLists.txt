@@ -3,14 +3,14 @@ cmake_minimum_required(VERSION 3.2)
 set(PATCH_VERSION "1" CACHE INTERNAL "Patch version")
 set(PROJECT_VESRION 0.0.${PATCH_VERSION})
 
-project(print_ip_lib VERSION ${PROJECT_VESRION})
+project(print_ip VERSION ${PROJECT_VESRION})
 
 option(WITH_BOOST_TEST "Whether to build Boost test" ON)
 
 configure_file(version.h.in version.h)
 
 add_executable(print_ip main.cpp)
-add_library(print_ip_lib lib.cpp)
+add_library(print_ip_lib lib.h lib.cpp)
 
 set_target_properties(print_ip print_ip_lib PROPERTIES
     CXX_STANDARD 20
