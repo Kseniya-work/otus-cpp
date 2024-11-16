@@ -1,3 +1,9 @@
+/*!
+\file
+\brief Custom allocator.
+
+*/
+
 #pragma once
 
 #include <iostream>
