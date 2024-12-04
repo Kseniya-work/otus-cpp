@@ -1,6 +1,5 @@
-/*!
-\file
-\brief Facade of model.
+/*! \file
+    \brief Facade of model.
 
 */
 
@@ -12,15 +11,18 @@
 #include <memory>
 #include <string>
 
+/*! \class FacadeOfModel.
+    \brief Facade of model.
+*/
 class FacadeOfModel
 {
 private:
-    std::shared_ptr<Model> model_;
-    std::shared_ptr<Observer> observer_;
+    std::unique_ptr<Model> model_; /*!< masked model */
+    std::shared_ptr<Observer> observer_; /*!< observer of model */
 
 public:
-    FacadeOfModel(std::shared_ptr<Model> model)
-    : model_(model)
+    FacadeOfModel(std::unique_ptr<Model> model)
+    : model_(std::move(model))
     , observer_(nullptr)
     {}
 

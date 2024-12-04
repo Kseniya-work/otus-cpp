@@ -1,11 +1,13 @@
-/*!
-\file
-\brief Model interface.
+/*! \file
+    \brief Model interface.
 
 */
 
 #pragma once
 
+/*! \class Model.
+    \brief Interface of abstract model.
+*/
 class Model
 {
 private:

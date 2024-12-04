@@ -4,8 +4,7 @@
 void EditorView::display() const
 {
     /*
-    auto data = model_->getData();
-    std::cout << data << std::endl;
+    model_->getData();
     */
 }
 

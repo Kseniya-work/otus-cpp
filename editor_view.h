@@ -1,6 +1,5 @@
-/*!
-\file
-\brief Editor view.
+/*! \file
+    \brief Editor view.
 
 */
 
@@ -12,10 +11,13 @@
 
 #include <memory>
 
+/*! \class EditorView.
+    \brief Editor view.
+*/
 class EditorView : public Observer, View
 {
 private:
-    std::shared_ptr<FacadeOfModel> model_;
+    std::shared_ptr<FacadeOfModel> model_; /*!< model being viewed */
 
 public:
     EditorView(std::shared_ptr<FacadeOfModel> model) : model_(model) {}

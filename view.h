@@ -1,6 +1,5 @@
-/*!
-\file
-\brief View interface.
+/*! \file
+    \brief View interface.
 
 */
 
@@ -8,6 +7,9 @@
 
 #include <string>
 
+/*! \class View.
+    \brief Interface of abstract view.
+*/
 class View
 {
 private:

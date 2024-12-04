@@ -1,6 +1,5 @@
-/*!
-\file
-\brief Observer interface.
+/*! \file
+    \brief Observer interface.
 
 */
 
@@ -8,6 +7,9 @@
 
 #include <string>
 
+/*! \class Observer.
+    \brief Interface of abstract observer.
+*/
 class Observer
 {
 public:

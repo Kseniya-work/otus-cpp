@@ -1,11 +1,13 @@
-/*!
-\file
-\brief Controller interface.
+/*! \file
+    \brief Controller interface.
 
 */
 
 #pragma once
 
+/*! \class Controller.
+    \brief Interface of abstract controller.
+*/
 class Controller
 {
 private:

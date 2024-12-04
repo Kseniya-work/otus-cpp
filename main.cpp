@@ -6,11 +6,11 @@
 #include <iostream>
 
 int main(int, char **) {
-    std::shared_ptr<Model>                   model = std::make_shared<EditorModel>();
-    std::shared_ptr<FacadeOfModel> facade_of_model = std::make_shared<FacadeOfModel>(model);
-    std::shared_ptr<Controller>         controller = std::make_shared<EditorController>(facade_of_model);
-    std::shared_ptr<Observer>                 view = std::make_shared<EditorView>(facade_of_model);
-    facade_of_model->attach(view);
+    std::unique_ptr<Model>                   model = std::make_unique<EditorModel>();
+    std::shared_ptr<FacadeOfModel> facade_of_model = std::make_shared<FacadeOfModel>(std::move(model));
+    std::unique_ptr<Controller>         controller = std::make_unique<EditorController>(facade_of_model);
+    std::unique_ptr<Observer>                 view = std::make_unique<EditorView>(facade_of_model);
+    facade_of_model->attach(std::move(view));
 
     controller->createNewDocument();
     controller->importDocument();

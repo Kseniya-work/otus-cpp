@@ -1,6 +1,5 @@
-/*!
-\file
-\brief Editor model.
+/*! \file
+    \brief Editor model.
 
 */
 
@@ -8,6 +7,9 @@
 
 #include "model.h"
 
+/*! \class EditorModel.
+    \brief Editor model.
+*/
 class EditorModel : public Model
 {
 private:

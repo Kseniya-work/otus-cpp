@@ -1,6 +1,5 @@
-/*!
-\file
-\brief Editor controller.
+/*! \file
+    \brief Editor controller.
 
 */
 
@@ -11,10 +10,13 @@
 
 #include <memory>
 
+/*! \class EditorController.
+    \brief Editor controller.
+*/
 class EditorController : public Controller
 {
 private:
-    std::shared_ptr<FacadeOfModel> model_;
+    std::shared_ptr<FacadeOfModel> model_; /*!< controlled model */
 
 public:
     EditorController(std::shared_ptr<FacadeOfModel> model) : model_(model) {}
