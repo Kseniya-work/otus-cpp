@@ -8,7 +8,7 @@ project(proxy_pattern VERSION ${PROJECT_VESRION})
 option(WITH_BOOST_TEST "Whether to build Boost test" ON)
 
 add_executable(proxy_pattern_cli main.cpp)
-add_library(proxy_pattern lib.h)
+add_library(proxy_pattern matrix.h sparse_matrix.h)
 
 set_target_properties(proxy_pattern_cli proxy_pattern PROPERTIES
     CXX_STANDARD 20

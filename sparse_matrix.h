@@ -14,6 +14,7 @@
 template<typename T>
 class SparseMatrix
 {
+public:
     class Row
     {
         using col_iterator = typename std::map<std::size_t, T>::iterator;
@@ -28,6 +29,7 @@ class SparseMatrix
         std::size_t   size() const { return row_.size(); }
     };
 
+private:
     std::map<std::size_t, Row> rows_;
 
 public:
@@ -101,12 +103,4 @@ public:
     {
         return rows_[i];
     }
-};
-
-/*! \class InfiniteMatrix.
-    \brief Infinite matrix with defaul values based on sparse matrix.
-*/
-class InfiniteMatrix
-{
-
 };

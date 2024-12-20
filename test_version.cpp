@@ -1,6 +1,6 @@
 #define BOOST_TEST_MODULE matrix_test
 
-#include "lib.h"
+#include "matrix.h"
 
 #include <boost/test/unit_test.hpp>
 
