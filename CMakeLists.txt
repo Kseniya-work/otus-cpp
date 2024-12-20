@@ -3,26 +3,25 @@ cmake_minimum_required(VERSION 3.2)
 set(PATCH_VERSION "1" CACHE INTERNAL "Patch version")
 set(PROJECT_VESRION 0.0.${PATCH_VERSION})
 
-project(helloworld VERSION ${PROJECT_VESRION})
+project(proxy_pattern VERSION ${PROJECT_VESRION})
 
 option(WITH_BOOST_TEST "Whether to build Boost test" ON)
 
-configure_file(version.h.in version.h)
+add_executable(proxy_pattern_cli main.cpp)
+add_library(proxy_pattern lib.h)
 
-add_executable(helloworld_cli main.cpp)
-add_library(helloworld lib.cpp)
-
-set_target_properties(helloworld_cli helloworld PROPERTIES
-    CXX_STANDARD 17
+set_target_properties(proxy_pattern_cli proxy_pattern PROPERTIES
+    CXX_STANDARD 20
     CXX_STANDARD_REQUIRED ON
+    LINKER_LANGUAGE CXX
 )
 
-target_include_directories(helloworld
+target_include_directories(proxy_pattern
     PRIVATE "${CMAKE_BINARY_DIR}"
 )
 
-target_link_libraries(helloworld_cli PRIVATE
-    helloworld
+target_link_libraries(proxy_pattern_cli PRIVATE
+    proxy_pattern
 )
 
 if(WITH_BOOST_TEST)
@@ -30,7 +29,7 @@ if(WITH_BOOST_TEST)
     add_executable(test_version test_version.cpp)
 
     set_target_properties(test_version PROPERTIES
-        CXX_STANDARD 17
+        CXX_STANDARD 20
         CXX_STANDARD_REQUIRED ON
     )
 
@@ -41,15 +40,15 @@ if(WITH_BOOST_TEST)
 
     target_link_libraries(test_version
         ${Boost_LIBRARIES}
-        helloworld
+        proxy_pattern
     )
 endif()
 
 if (MSVC)
-    target_compile_options(helloworld_cli PRIVATE
+    target_compile_options(proxy_pattern_cli PRIVATE
         /W4
     )
-    target_compile_options(helloworld PRIVATE
+    target_compile_options(proxy_pattern PRIVATE
         /W4
     )
     if(WITH_BOOST_TEST)
@@ -58,10 +57,10 @@ if (MSVC)
         )
     endif()
 else ()
-    target_compile_options(helloworld_cli PRIVATE
+    target_compile_options(proxy_pattern_cli PRIVATE
         -Wall -Wextra -pedantic -Werror
     )
-    target_compile_options(helloworld PRIVATE
+    target_compile_options(proxy_pattern PRIVATE
         -Wall -Wextra -pedantic -Werror
     )
     if(WITH_BOOST_TEST)
@@ -71,7 +70,7 @@ else ()
     endif()
 endif()
 
-install(TARGETS helloworld_cli RUNTIME DESTINATION bin)
+install(TARGETS proxy_pattern_cli RUNTIME DESTINATION bin)
 
 set(CPACK_GENERATOR DEB)
 set(CPACK_PACKAGE_VERSION_MAJOR "${PROJECT_VERSION_MAJOR}")

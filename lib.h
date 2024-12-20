@@ -1,14 +1,12 @@
 /*! \file
-    \brief Matrix.
-
+    \brief SparseMatrix.
 */
 
 #pragma once
 
 #include <map>
+#include <numeric>
 #include <tuple>
-
-int version();
 
 /*! \class SparseMatrix.
     \brief Sparse matrix.
@@ -16,7 +14,6 @@ int version();
 template<typename T>
 class SparseMatrix
 {
-public:
     class Row
     {
         using col_iterator = typename std::map<std::size_t, T>::iterator;
@@ -28,18 +25,18 @@ public:
 
         col_iterator begin() { return row_.begin(); }
         col_iterator   end() { return row_.end(); }
+        std::size_t   size() const { return row_.size(); }
     };
 
-private:
     std::map<std::size_t, Row> rows_;
 
 public:
     class iterator : public std::iterator<
                                 std::bidirectional_iterator_tag, // iterator_category
-                                T,               // value_type
+                                T,                               // value_type
                                 std::ptrdiff_t,                  // difference_type
-                                T*,        // pointer
-                                T&               // reference
+                                T*,                              // pointer
+                                T&                               // reference
                             >
     {
         using row_iterator = typename std::map<std::size_t, Row>::iterator;
@@ -75,18 +72,29 @@ public:
         // Postfix increment
         iterator operator++(int) { iterator tmp = *this; ++(*this); return tmp; }
 
-        bool operator==(iterator other) const { return (rowIt_ == other.rowIt_) && (colIt_ == other.colIt_); }
-        bool operator!=(iterator other) const { return !(*this == other); }
-        std::tuple<std::size_t, std::size_t, T> operator*() const { return std::make_tuple(rowIt_->first, colIt_->first, colIt_->second); }
+        bool operator==(const iterator other) const
+        {
+            return (rowIt_ == other.rowIt_) && (colIt_ == other.colIt_);
+        }
+        bool operator!=(const iterator other) const { return !(*this == other); }
+        std::tuple<std::size_t, std::size_t, T> operator*() const
+        {
+            return std::make_tuple(rowIt_->first, colIt_->first, colIt_->second);
+        }
     };
+
     iterator begin() { return iterator(rows_.begin(), rows_.end()); }
     iterator   end() { return iterator(rows_.end(), rows_.end()); }
 
+public:
     SparseMatrix() : rows_() {}
 
     std::size_t size() const
     {
-        return rows_.size();
+        return std::accumulate(rows_.cbegin(), rows_.cend(), 0, [](int count, const auto row) {
+                return count + row.second.size();
+            }
+        );
     }
 
     Row& operator[](const std::size_t i)
@@ -96,7 +104,7 @@ public:
 };
 
 /*! \class InfiniteMatrix.
-    \brief .
+    \brief Infinite matrix with defaul values based on sparse matrix.
 */
 class InfiniteMatrix
 {
