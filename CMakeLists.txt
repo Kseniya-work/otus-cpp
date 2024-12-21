@@ -8,7 +8,7 @@ project(proxy_pattern VERSION ${PROJECT_VESRION})
 option(WITH_BOOST_TEST "Whether to build Boost test" ON)
 
 add_executable(proxy_pattern_cli main.cpp)
-add_library(proxy_pattern matrix.h sparse_matrix.h)
+add_library(proxy_pattern sparse_matrix.h)
 
 set_target_properties(proxy_pattern_cli proxy_pattern PROPERTIES
     CXX_STANDARD 20
@@ -26,19 +26,19 @@ target_link_libraries(proxy_pattern_cli PRIVATE
 
 if(WITH_BOOST_TEST)
     find_package(Boost COMPONENTS unit_test_framework REQUIRED)
-    add_executable(test_version test_version.cpp)
+    add_executable(test_matrix test_matrix.cpp)
 
-    set_target_properties(test_version PROPERTIES
+    set_target_properties(test_matrix PROPERTIES
         CXX_STANDARD 20
         CXX_STANDARD_REQUIRED ON
     )
 
-    set_target_properties(test_version PROPERTIES
+    set_target_properties(test_matrix PROPERTIES
         COMPILE_DEFINITIONS BOOST_TEST_DYN_LINK
         INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR}
     )
 
-    target_link_libraries(test_version
+    target_link_libraries(test_matrix
         ${Boost_LIBRARIES}
         proxy_pattern
     )
@@ -52,7 +52,7 @@ if (MSVC)
         /W4
     )
     if(WITH_BOOST_TEST)
-        target_compile_options(test_version PRIVATE
+        target_compile_options(test_matrix PRIVATE
             /W4
         )
     endif()
@@ -64,7 +64,7 @@ else ()
         -Wall -Wextra -pedantic -Werror
     )
     if(WITH_BOOST_TEST)
-        target_compile_options(test_version PRIVATE
+        target_compile_options(test_matrix PRIVATE
             -Wall -Wextra -pedantic -Werror
         )
     endif()
@@ -81,5 +81,5 @@ include(CPack)
 
 if(WITH_BOOST_TEST)
     enable_testing()
-    add_test(test_version test_version)
+    add_test(test_matrix test_matrix)
 endif()
