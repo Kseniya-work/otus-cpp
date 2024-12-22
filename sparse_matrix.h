@@ -77,14 +77,14 @@ class SparseMatrix
         }
     };
 
-    class iterator : public std::iterator<
-                                std::bidirectional_iterator_tag, // iterator_category
-                                T,                               // value_type
-                                std::ptrdiff_t,                  // difference_type
-                                T*,                              // pointer
-                                T&                               // reference
-                            >
+    class iterator
     {
+        using iterator_category = std::bidirectional_iterator_tag;
+        using difference_type   = std::ptrdiff_t;
+        using value_type        = T;
+        using pointer           = T*;
+        using reference         = T&;
+
         using row_iterator = typename std::map<std::size_t, Row>::iterator;
         using col_iterator = typename std::map<std::size_t, T>::iterator;
 
