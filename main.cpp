@@ -1,31 +1,42 @@
 #include "sparse_matrix.h"
 
-#include <iostream>
 #include <cassert>
-
+#include <cstdio>
+#include <iostream>
 
 int main(int, char **) {
-    // бесконечная матрица int заполнена значениями -1
-    SparseMatrix<int, -1> matrix;
-    assert(matrix.size() == 0); // все ячейки свободны
+    // infinite matrix filled with 0 values
+    SparseMatrix<int> matrix;
+    assert(matrix.size() == 0); // all cells are free
     auto a = matrix[0][0];
-    assert(a == -1);
+    assert(a == 0);
     assert(matrix.size() == 0);
 
-    ((matrix[100][100] = 314) = 0) = 217;
-    matrix[100][1] = 315;
-    matrix[10][100] = 316;
-    matrix[0][100] = 317;
-    assert(matrix[100][100] == 217);
-    assert(matrix.size() == 4);
+    std::size_t n = 10;
+    for (std::size_t i = 0; i < n; i++)
+    {
+        matrix[i][i] = i;
+        matrix[i][n - 1 - i] = n - 1 - i;
+    }
+
+    for (std::size_t i = 1; i < n - 1; i++)
+    {
+        for (std::size_t j = 1; j < n - 1; j++)
+            std::cout << matrix[i][j] << ' ';
+        std::cout << std::endl;
+    }
+    std::cout << std::endl;
+
+    assert(matrix.size() == 18); // default elements are not taken into account
+    std::cout << "size = " << matrix.size() << std::endl;
 
     for(auto c: matrix)
     {
-        int x;
-        int y;
+        int i;
+        int j;
         int v;
-        std::tie(x, y, v) = c;
-        std::cout << x << y << v << std::endl;
+        std::tie(i, j, v) = c;
+        std::printf("m[%d][%d] = %d\n", i, j, v);
     }
 
     return 0;

@@ -41,7 +41,8 @@ class SparseMatrix
 
             T& operator=(T value) // in cases as: matrix[i][j] = value;
             {
-                return row_.cols_[index_] = value;
+                T& inserted = row_.cols_[index_] = value;
+                return value != DefaultValue ? inserted : row_.cols_.erase(row_.cols_.find(index_))->second; // remove from matrix in case default value assigning
             }
 
             operator T() const // in cases as: auto val = matrix[i][j];

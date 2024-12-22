@@ -49,4 +49,12 @@ BOOST_AUTO_TEST_CASE(iterable) {
     }
 }
 
+BOOST_AUTO_TEST_CASE(free_the_cell) {
+    SparseMatrix<int, -1> matrix;
+    matrix[1][1] = 10;
+    BOOST_CHECK(matrix.size() == 1);
+    matrix[1][1] = -1;
+    BOOST_CHECK(matrix.size() == 0);
+}
+
 BOOST_AUTO_TEST_SUITE_END()
