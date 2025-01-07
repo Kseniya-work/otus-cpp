@@ -12,7 +12,7 @@ int main(int argc, char *argv[]) {
             // throw std::runtime_error("Wrong static block size.");
 
         // Handler handler(argv[1]);
-        Handler handler(3);  //TODO delete
+        Handler handler(2);  //TODO delete
         handler.write(std::cin);
     }
     /*
