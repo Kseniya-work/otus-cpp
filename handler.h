@@ -1,55 +1,62 @@
 #pragma once
 
-#include "storage.h"
-
-#include <iostream>
+#include <algorithm>
 #include <memory>
+#include <sstream>
 #include <string>
 #include <vector>
 
-template <typename Storage>
+template <typename Storage, typename Logger>
 class Handler
 {
 private:
     using StoragePtr = std::unique_ptr<Storage>;
+    using Loggers = std::vector<std::shared_ptr<Logger>>;
 
-    StoragePtr storage_;
     int staticBlockSize_;
+    StoragePtr storage_;
+    Loggers loggers_;
     std::string endString_;
     std::string dynamicBlockBeginSymbol_;
     std::string dynamicBlockEndSymbol_;
 
 public:
-    Handler(StoragePtr storage,
-            const int staticBlockSize,
+    Handler(const int staticBlockSize,
+            StoragePtr storage,
+            const Loggers & loggers,
             const std::string endString = "EOF",
             const std::string dynamicBlockBeginSymbol = "{",
             const std::string dynamicBlockEndSymbol = "}")
-    : storage_(std::move(storage))
-    , staticBlockSize_(staticBlockSize)
+    : staticBlockSize_(staticBlockSize)
+    , storage_(std::move(storage))
+    , loggers_(loggers)
     , endString_(endString)
     , dynamicBlockBeginSymbol_(dynamicBlockBeginSymbol)
     , dynamicBlockEndSymbol_(dynamicBlockEndSymbol)
     {}
 
-    void write(std::istream& istream);
-    void print() const;
+    void read(std::istream& istream);
+    void write() const;
 };
 
 
-template <typename Storage>
-void Handler<Storage>::print() const
+template <typename Storage, typename Logger>
+void Handler<Storage, Logger>::write() const
 {
-    std::cout << "bulk: ";
-    for (auto it = storage_->begin(); it != storage_->end(); ++(it))
+    std::ostringstream bulk;
+    bulk << "bulk: ";
+    for (auto it = storage_->begin(); it != storage_->end(); ++it)
     {
-        std::cout << (it != storage_->begin() ? ", " : "") << *it;
+        bulk << (it != storage_->begin() ? ", " : "") << *it;
     }
-    std::cout << std::endl;
+    bulk << std::endl;
+
+    std::for_each(loggers_.begin(), loggers_.end(), [&bulk](const auto & logger){
+        logger->write(bulk);});
 }
 
-template <typename Storage>
-void Handler<Storage>::write(std::istream& istream)
+template <typename Storage, typename Logger>
+void Handler<Storage, Logger>::read(std::istream& istream)
 {
     static bool isDynamicBlockStarted = false;
     static int openBracketsCount = 0;
@@ -60,7 +67,7 @@ void Handler<Storage>::write(std::istream& istream)
         if (line == endString_)
         {
             if (!isDynamicBlockStarted && !storage_->empty())
-                print();
+                write();
             break;
         }
         else if (line == dynamicBlockBeginSymbol_)
@@ -70,7 +77,7 @@ void Handler<Storage>::write(std::istream& istream)
 
             if ((openBracketsCount == 1) && !storage_->empty())
             {
-                print();
+                write();
                 storage_->clear();
                 staticBlockSizeCurrent = staticBlockSize_;
             }
@@ -82,7 +89,7 @@ void Handler<Storage>::write(std::istream& istream)
             if (openBracketsCount == 0)
             {
                 isDynamicBlockStarted = false;
-                print();
+                write();
                 storage_->clear();
             }
             continue;
@@ -91,7 +98,7 @@ void Handler<Storage>::write(std::istream& istream)
         storage_->add(line);
         if (!isDynamicBlockStarted && staticBlockSizeCurrent == 1)
         {
-            print();
+            write();
             storage_->clear();
             staticBlockSizeCurrent = staticBlockSize_;
         }
