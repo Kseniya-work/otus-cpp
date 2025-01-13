@@ -8,7 +8,7 @@ project(bulk VERSION ${PROJECT_VESRION})
 option(WITH_BOOST_TEST "Whether to build Boost test" ON)
 
 add_executable(bulk main.cpp)
-add_library(parser handler.cpp)
+add_library(parser handler.cpp vector_storage.h)
 
 set_target_properties(bulk parser PROPERTIES
     CXX_STANDARD 20
