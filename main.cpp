@@ -1,3 +1,5 @@
+#include "console_logger.h"
+#include "file_logger.h"
 #include "handler.h"
 #include "vector_storage.h"
 
@@ -13,11 +15,16 @@ int main(int argc, char *argv[]) {
         // if (argv[1] < 0)
             // throw std::runtime_error("Wrong static block size.");
 
-        auto storage = std::make_unique<VectorStorage<std::string>>();
+        using storage_type = VectorStorage<std::string>;
+        using handler_type = Handler<storage_type, Logger>;
 
-        // Handler handler(argv[1]);
-        Handler handler(std::move(storage), 2);  //TODO delete
-        handler.write(std::cin);
+        auto storage = std::make_unique<storage_type>();
+        std::vector<std::shared_ptr<Logger>> loggers = {std::make_shared<ConsoleLogger>(),
+                                                        std::make_shared<FileLogger>()};
+        std::unique_ptr<handler_type> handler(
+            new handler_type{2, std::move(storage), loggers});
+
+        handler->read(std::cin);
     }
     /*
     else

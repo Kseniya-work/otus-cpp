@@ -14,7 +14,7 @@ BOOST_AUTO_TEST_CASE(test_static_block) {
     auto storage = std::make_unique<VectorStorage<std::string>>();
     Handler handler(std::move(storage), 3);
     std::stringstream stream("cmd1\ncmd2\ncmd3\ncmd4\n");
-    handler.write(stream);
+    handler.read(stream);
     BOOST_CHECK(true);
     */
 }

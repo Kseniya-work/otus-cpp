@@ -1,7 +1,6 @@
 #pragma once
 
 #include "storage.h"
-#include <memory>
 #include <vector>
 
 template <typename T>
@@ -26,12 +25,12 @@ public:
         return bulk_.empty();
     }
 
-    auto begin() -> decltype(bulk_.begin())
+    auto begin() -> decltype(bulk_.begin()) override
     {
         return bulk_.begin();
     }
 
-    auto end() -> decltype(bulk_.end())
+    auto end() -> decltype(bulk_.end()) override
     {
         return bulk_.end();
     }
