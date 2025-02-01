@@ -1,10 +1,16 @@
 #pragma once
 
 #include <algorithm>
+#include <chrono>
 #include <memory>
 #include <sstream>
 #include <string>
 #include <vector>
+
+
+#include <ctime>
+#include <iomanip>
+#include <iostream>//TODO delete
 
 template <typename Storage, typename Logger>
 class Handler
@@ -13,36 +19,47 @@ private:
     using StoragePtr = std::unique_ptr<Storage>;
     using Loggers = std::vector<std::shared_ptr<Logger>>;
 
-    int staticBlockSize_;
     StoragePtr storage_;
     Loggers loggers_;
+
+    int staticBlockSize_;
+    int staticBlockSizeCurrent_;
+    bool isBulkStart_;
     std::string endString_;
     std::string dynamicBlockBeginSymbol_;
     std::string dynamicBlockEndSymbol_;
 
 public:
-    Handler(const int staticBlockSize,
-            StoragePtr storage,
+    Handler(StoragePtr storage,
             const Loggers & loggers,
+            const int staticBlockSize,
             const std::string endString = "EOF",
             const std::string dynamicBlockBeginSymbol = "{",
             const std::string dynamicBlockEndSymbol = "}")
-    : staticBlockSize_(staticBlockSize)
-    , storage_(std::move(storage))
+    : storage_(std::move(storage))
     , loggers_(loggers)
+    , staticBlockSize_(staticBlockSize)
+    , staticBlockSizeCurrent_(staticBlockSize)
+    , isBulkStart_(true)
     , endString_(endString)
     , dynamicBlockBeginSymbol_(dynamicBlockBeginSymbol)
     , dynamicBlockEndSymbol_(dynamicBlockEndSymbol)
     {}
 
     void read(std::istream& istream);
-    void write() const;
+    void write(std::chrono::time_point<std::chrono::steady_clock> ) const;
+
+private:
+    void drop(std::chrono::time_point<std::chrono::steady_clock> time);
 };
 
 
 template <typename Storage, typename Logger>
-void Handler<Storage, Logger>::write() const
+void Handler<Storage, Logger>::write(std::chrono::time_point<std::chrono::steady_clock> ) const
 {
+    if (storage_->empty())
+        return;
+
     std::ostringstream bulk;
     bulk << "bulk: ";
     for (auto it = storage_->begin(); it != storage_->end(); ++it)
@@ -51,60 +68,72 @@ void Handler<Storage, Logger>::write() const
     }
     bulk << std::endl;
 
+    // std::cout << time.time_since_epoch();
     std::for_each(loggers_.begin(), loggers_.end(), [&bulk](const auto & logger){
         logger->write(bulk);});
 }
 
 template <typename Storage, typename Logger>
+void Handler<Storage, Logger>::drop(std::chrono::time_point<std::chrono::steady_clock> time)
+{
+    write(time);
+    storage_->clear();
+    isBulkStart_ = true;
+    staticBlockSizeCurrent_ = staticBlockSize_;
+}
+
+template <typename Storage, typename Logger>
 void Handler<Storage, Logger>::read(std::istream& istream)
 {
-    static bool isDynamicBlockStarted = false;
-    static int openBracketsCount = 0;
-    int staticBlockSizeCurrent = staticBlockSize_;
+    bool isDynamicBlock = false;
+    int openBracketsCount = 0;
+    std::chrono::time_point<std::chrono::steady_clock> fstCmdTime;
 
     for(std::string line; std::getline(istream, line);)
     {
+        if (isBulkStart_)
+            fstCmdTime = std::chrono::steady_clock::now();
+
         if (line == endString_)
         {
-            if (!isDynamicBlockStarted && !storage_->empty())
-                write();
+            if (!isDynamicBlock)
+                drop(fstCmdTime);
             break;
         }
         else if (line == dynamicBlockBeginSymbol_)
         {
             openBracketsCount++;
-            isDynamicBlockStarted = true;
-
-            if ((openBracketsCount == 1) && !storage_->empty())
+            if (openBracketsCount == 1)
             {
-                write();
-                storage_->clear();
-                staticBlockSizeCurrent = staticBlockSize_;
+                isDynamicBlock = true;
+                drop(fstCmdTime);
             }
             continue;
         }
-        else if (line == dynamicBlockEndSymbol_ && openBracketsCount > 0)
+        else if ((line == dynamicBlockEndSymbol_) && (openBracketsCount > 0))
         {
             openBracketsCount--;
             if (openBracketsCount == 0)
             {
-                isDynamicBlockStarted = false;
-                write();
-                storage_->clear();
+                isDynamicBlock = false;
+                drop(fstCmdTime);
             }
             continue;
         }
 
-        storage_->add(line);
-        if (!isDynamicBlockStarted && staticBlockSizeCurrent == 1)
+        if (isDynamicBlock || (staticBlockSizeCurrent_ > 0))
         {
-            write();
-            storage_->clear();
-            staticBlockSizeCurrent = staticBlockSize_;
+            storage_->add(line);
+            isBulkStart_ = false;
         }
-        else if (!isDynamicBlockStarted && staticBlockSizeCurrent != 0)
+
+        if (!isDynamicBlock && (staticBlockSizeCurrent_ > 0))
         {
-            staticBlockSizeCurrent--;
+            staticBlockSizeCurrent_--;
+            if (staticBlockSizeCurrent_ == 0)
+            {
+                drop(fstCmdTime);
+            }
         }
     }
 }
