@@ -22,7 +22,7 @@ int main(int argc, char *argv[]) {
         std::vector<std::shared_ptr<Logger>> loggers = {std::make_shared<ConsoleLogger>(),
                                                         std::make_shared<FileLogger>()};
         std::unique_ptr<handler_type> handler(
-            new handler_type{2, std::move(storage), loggers});
+            new handler_type{std::move(storage), loggers, 2});
 
         handler->read(std::cin);
     }
