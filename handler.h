@@ -7,11 +7,6 @@
 #include <string>
 #include <vector>
 
-
-#include <ctime>
-#include <iomanip>
-#include <iostream>//TODO delete
-
 template <typename Storage, typename Logger>
 class Handler
 {
@@ -55,7 +50,7 @@ private:
 
 
 template <typename Storage, typename Logger>
-void Handler<Storage, Logger>::write(std::chrono::time_point<std::chrono::steady_clock> ) const
+void Handler<Storage, Logger>::write(std::chrono::time_point<std::chrono::steady_clock> time) const
 {
     if (storage_->empty())
         return;
@@ -68,9 +63,8 @@ void Handler<Storage, Logger>::write(std::chrono::time_point<std::chrono::steady
     }
     bulk << std::endl;
 
-    // std::cout << time.time_since_epoch();
-    std::for_each(loggers_.begin(), loggers_.end(), [&bulk](const auto & logger){
-        logger->write(bulk);});
+    for (const auto & logger : loggers_)
+        logger->write(bulk, time);
 }
 
 template <typename Storage, typename Logger>
