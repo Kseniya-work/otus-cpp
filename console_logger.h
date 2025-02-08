@@ -6,5 +6,5 @@
 class ConsoleLogger : public Logger
 {
 public:
-    void write(std::ostringstream& ostream) const override;
+    virtual void write(std::ostringstream& ostream, std::chrono::time_point<std::chrono::steady_clock>) const override;
 };

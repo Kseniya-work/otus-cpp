@@ -7,6 +7,11 @@ project(bulk VERSION ${PROJECT_VESRION})
 
 option(WITH_BOOST_TEST "Whether to build Boost test" ON)
 
+# if(NOT TARGET spdlog)
+    # Stand-alone build
+    # find_package(spdlog REQUIRED)
+# endif()
+
 add_executable(bulk main.cpp)
 
 set(interface
@@ -28,10 +33,12 @@ set_target_properties(bulk parser PROPERTIES
 
 target_include_directories(parser
     PRIVATE "${CMAKE_BINARY_DIR}"
+    "include"
 )
 
 target_link_libraries(bulk PRIVATE
     parser
+    # spdlog::spdlog_header_only
 )
 
 if(WITH_BOOST_TEST)
@@ -51,6 +58,7 @@ if(WITH_BOOST_TEST)
     target_link_libraries(test_parser
         ${Boost_LIBRARIES}
         parser
+        # spdlog::spdlog_header_only
     )
 endif()
 

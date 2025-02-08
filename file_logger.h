@@ -6,5 +6,5 @@
 class FileLogger : public Logger
 {
 public:
-    void write(std::ostringstream&) const override;
+    virtual void write(std::ostringstream& ostream, std::chrono::time_point<std::chrono::steady_clock> time) const override;
 };
