@@ -1,7 +1,7 @@
 #include "console_logger.h"
 #include <iostream>
 
-void ConsoleLogger::write(std::ostringstream& ostream, std::chrono::time_point<std::chrono::steady_clock>) const
+void ConsoleLogger::write(const std::ostringstream& ostream, const time_type) const
 {
     std::cout << ostream.str();
 }

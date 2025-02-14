@@ -13,44 +13,39 @@ class Handler
 private:
     using StoragePtr = std::unique_ptr<Storage>;
     using Loggers = std::vector<std::shared_ptr<Logger>>;
+    using time_type = std::chrono::time_point<std::chrono::steady_clock>;
 
     StoragePtr storage_;
     Loggers loggers_;
+    std::array<std::string, 3> smbl_;
 
     int staticBlockSize_;
     int staticBlockSizeCurrent_;
     bool isBulkStart_;
-    std::string endString_;
-    std::string dynamicBlockBeginSymbol_;
-    std::string dynamicBlockEndSymbol_;
 
 public:
     Handler(StoragePtr storage,
             const Loggers & loggers,
             const int staticBlockSize,
-            const std::string endString = "EOF",
-            const std::string dynamicBlockBeginSymbol = "{",
-            const std::string dynamicBlockEndSymbol = "}")
+            const std::array<std::string, 3> smbl = {"{", "}", "EOF"})
     : storage_(std::move(storage))
     , loggers_(loggers)
+    , smbl_(smbl)
     , staticBlockSize_(staticBlockSize)
     , staticBlockSizeCurrent_(staticBlockSize)
     , isBulkStart_(true)
-    , endString_(endString)
-    , dynamicBlockBeginSymbol_(dynamicBlockBeginSymbol)
-    , dynamicBlockEndSymbol_(dynamicBlockEndSymbol)
     {}
 
     void read(std::istream& istream);
-    void write(std::chrono::time_point<std::chrono::steady_clock> ) const;
+    void write(const time_type time) const;
 
 private:
-    void drop(std::chrono::time_point<std::chrono::steady_clock> time);
+    void drop(const time_type time);
 };
 
 
 template <typename Storage, typename Logger>
-void Handler<Storage, Logger>::write(std::chrono::time_point<std::chrono::steady_clock> time) const
+void Handler<Storage, Logger>::write(const time_type time) const
 {
     if (storage_->empty())
         return;
@@ -68,7 +63,7 @@ void Handler<Storage, Logger>::write(std::chrono::time_point<std::chrono::steady
 }
 
 template <typename Storage, typename Logger>
-void Handler<Storage, Logger>::drop(std::chrono::time_point<std::chrono::steady_clock> time)
+void Handler<Storage, Logger>::drop(const time_type time)
 {
     write(time);
     storage_->clear();
@@ -81,20 +76,20 @@ void Handler<Storage, Logger>::read(std::istream& istream)
 {
     bool isDynamicBlock = false;
     int openBracketsCount = 0;
-    std::chrono::time_point<std::chrono::steady_clock> fstCmdTime;
+    time_type fstCmdTime;
 
     for(std::string line; std::getline(istream, line);)
     {
         if (isBulkStart_)
             fstCmdTime = std::chrono::steady_clock::now();
 
-        if (line == endString_)
+        if (line == smbl_[2])
         {
             if (!isDynamicBlock)
                 drop(fstCmdTime);
             break;
         }
-        else if (line == dynamicBlockBeginSymbol_)
+        else if (line == smbl_[0])
         {
             openBracketsCount++;
             if (openBracketsCount == 1)
@@ -104,7 +99,7 @@ void Handler<Storage, Logger>::read(std::istream& istream)
             }
             continue;
         }
-        else if ((line == dynamicBlockEndSymbol_) && (openBracketsCount > 0))
+        else if ((line == smbl_[1]) && (openBracketsCount > 0))
         {
             openBracketsCount--;
             if (openBracketsCount == 0)
