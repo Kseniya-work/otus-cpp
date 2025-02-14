@@ -6,6 +6,7 @@
 class Logger
 {
 public:
+    using time_type = std::chrono::time_point<std::chrono::steady_clock>;
     virtual ~Logger() = default;
-    virtual void write(std::ostringstream& ostream, std::chrono::time_point<std::chrono::steady_clock> time) const = 0;
+    virtual void write(const std::ostringstream& ostream, const time_type time) const = 0;
 };
