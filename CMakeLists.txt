@@ -28,7 +28,6 @@ set_target_properties(bulk parser PROPERTIES
 
 target_include_directories(parser
     PRIVATE "${CMAKE_BINARY_DIR}"
-    "include"
 )
 
 target_link_libraries(bulk PRIVATE
