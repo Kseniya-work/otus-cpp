@@ -10,28 +10,21 @@ option(WITH_BOOST_TEST "Whether to build Boost test" ON)
 add_executable(bulk main.cpp)
 
 set(interface
-    console_logger.cpp
-    console_logger.h
-    file_logger.cpp
     file_logger.h
     handler.h
     logger.h
     storage.h
+    stream_logger.h
     vector_storage.h
 )
-add_library(parser ${interface})
 
-set_target_properties(bulk parser PROPERTIES
-    CXX_STANDARD 20
+set_target_properties(bulk PROPERTIES
+    CXX_STANDARD 17
     CXX_STANDARD_REQUIRED ON
 )
 
-target_include_directories(parser
-    PRIVATE "${CMAKE_BINARY_DIR}"
-)
-
-target_link_libraries(bulk PRIVATE
-    parser
+target_include_directories(bulk
+    INTERFACE "${CMAKE_BINARY_DIR}"/include
 )
 
 if(WITH_BOOST_TEST)
@@ -48,17 +41,16 @@ if(WITH_BOOST_TEST)
         INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR}
     )
 
+    target_include_directories(test_parser
+        INTERFACE "${CMAKE_BINARY_DIR}"/include
+    )
     target_link_libraries(test_parser
         ${Boost_LIBRARIES}
-        parser
     )
 endif()
 
 if (MSVC)
     target_compile_options(bulk PRIVATE
-        /W4
-    )
-    target_compile_options(parser PRIVATE
         /W4
     )
     if(WITH_BOOST_TEST)
@@ -68,9 +60,6 @@ if (MSVC)
     endif()
 else ()
     target_compile_options(bulk PRIVATE
-        -Wall -Wextra -pedantic -Werror
-    )
-    target_compile_options(parser PRIVATE
         -Wall -Wextra -pedantic -Werror
     )
     if(WITH_BOOST_TEST)
