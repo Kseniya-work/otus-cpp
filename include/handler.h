@@ -11,33 +11,32 @@ template <typename Storage, typename Logger>
 class Handler
 {
 private:
-    using StoragePtr = std::unique_ptr<Storage>;
+    using StoragePtr = std::shared_ptr<Storage>;
     using Loggers = std::vector<std::shared_ptr<Logger>>;
     using time_type = std::chrono::time_point<std::chrono::steady_clock>;
 
     StoragePtr storage_;
-    Loggers loggers_;
-    std::array<std::string, 3> smbl_;
-
     int staticBlockSize_;
+    Loggers loggers_;
+
+    std::array<std::string, 3> smbl_;
     int staticBlockSizeCurrent_;
     bool isBulkStart_;
 
 public:
     Handler(StoragePtr storage,
-            const Loggers & loggers,
             const int staticBlockSize,
+            const Loggers & loggers = {},
             const std::array<std::string, 3> smbl = {"{", "}", "EOF"})
-    : storage_(std::move(storage))
+    : storage_(storage)
+    , staticBlockSize_(staticBlockSize)
     , loggers_(loggers)
     , smbl_(smbl)
-    , staticBlockSize_(staticBlockSize)
     , staticBlockSizeCurrent_(staticBlockSize)
     , isBulkStart_(true)
     {}
 
     void read(std::istream& istream);
-    void write(const time_type time) const;
 
 private:
     void drop(const time_type time);
@@ -45,27 +44,13 @@ private:
 
 
 template <typename Storage, typename Logger>
-void Handler<Storage, Logger>::write(const time_type time) const
-{
-    if (storage_->empty())
-        return;
-
-    std::ostringstream bulk;
-    bulk << "bulk: ";
-    for (auto it = storage_->begin(); it != storage_->end(); ++it)
-    {
-        bulk << (it != storage_->begin() ? ", " : "") << *it;
-    }
-    bulk << std::endl;
-
-    for (const auto & logger : loggers_)
-        logger->write(bulk, time);
-}
-
-template <typename Storage, typename Logger>
 void Handler<Storage, Logger>::drop(const time_type time)
 {
-    write(time);
+    storage_->setTime(time);
+
+    for (auto& logger : loggers_)
+        logger->write(*storage_);
+
     storage_->clear();
     isBulkStart_ = true;
     staticBlockSizeCurrent_ = staticBlockSize_;
